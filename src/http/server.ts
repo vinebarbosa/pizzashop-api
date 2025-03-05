@@ -27,14 +27,29 @@ import { getPopularProducts } from './routes/get-popular-products'
 import { dispatchOrder } from './routes/dispatch-order'
 import { deliverOrder } from './routes/deliver-order'
 
+const corsMiddleware = (app: Elysia) => {
+  return app.onRequest(({ request, set }) => {
+    const allowedOrigins = ['https://pizzashop.projects.viniciosbarbosa.com']
+    const requestOrigin = request.headers.get('Origin')
+
+    if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
+      set.headers['Access-Control-Allow-Origin'] = requestOrigin
+      set.headers['Access-Control-Allow-Methods'] =
+        'GET, POST, PUT, DELETE, PATCH, OPTIONS'
+      set.headers['Access-Control-Allow-Headers'] =
+        'Content-Type, Authorization'
+      set.headers['Access-Control-Allow-Credentials'] = 'true'
+    }
+
+    // Se for uma requisição OPTIONS (preflight), retorna status 204 sem conteúdo
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204 })
+    }
+  })
+}
+
 const app = new Elysia()
-  .use(
-    cors({
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
-      origin: 'https://pizzashop.projects.viniciosbarbosa.com',
-    }),
-  )
+  .use(corsMiddleware)
   .use(authentication)
   .use(signOut)
   .use(getProfile)
@@ -60,10 +75,6 @@ const app = new Elysia()
   .use(getMonthCanceledOrdersAmount)
   .use(getDailyReceiptInPeriod)
   .use(getPopularProducts)
-  .onAfterHandle(({ request, set }) => {
-    set.headers['Access-Control-Allow-Origin'] =
-      'https://pizzashop.projects.viniciosbarbosa.com'
-  })
   .onError(({ code, error, set }) => {
     switch (code) {
       case 'VALIDATION': {
