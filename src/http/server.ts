@@ -31,17 +31,8 @@ const app = new Elysia()
   .use(
     cors({
       credentials: true,
-      allowedHeaders: ['content-type'],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
-      origin: (request): boolean => {
-        const origin = request.headers.get('origin')
-
-        if (!origin) {
-          return false
-        }
-
-        return true
-      },
+      origin: 'https://pizzashop.projects.viniciosbarbosa.com',
     }),
   )
   .use(authentication)
@@ -69,6 +60,12 @@ const app = new Elysia()
   .use(getMonthCanceledOrdersAmount)
   .use(getDailyReceiptInPeriod)
   .use(getPopularProducts)
+  .onAfterHandle(({ request, set }) => {
+    if (request.method !== 'OPTIONS') return
+
+    set.headers['Access-Control-Allow-Origin'] =
+      'https://pizzashop.projects.viniciosbarbosa.com'
+  })
   .onError(({ code, error, set }) => {
     switch (code) {
       case 'VALIDATION': {
