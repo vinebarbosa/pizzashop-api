@@ -61,8 +61,6 @@ const app = new Elysia()
   .use(getDailyReceiptInPeriod)
   .use(getPopularProducts)
   .onAfterHandle(({ request, set }) => {
-    if (request.method !== 'OPTIONS') return
-
     set.headers['Access-Control-Allow-Origin'] =
       'https://pizzashop.projects.viniciosbarbosa.com'
   })
