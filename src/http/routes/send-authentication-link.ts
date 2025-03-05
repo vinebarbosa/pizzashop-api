@@ -7,6 +7,8 @@ import { AuthenticationMagicLinkTemplate } from '@/mail/templates/authentication
 import { env } from '@/env'
 import { UnauthorizedError } from './errors/unauthorized-error'
 
+import { renderToString } from 'react-dom/server'
+
 export const sendAuthenticationLink = new Elysia().post(
   '/authenticate',
   async ({ body }) => {
@@ -39,10 +41,12 @@ export const sendAuthenticationLink = new Elysia().post(
       from: 'Pizza Shop <naoresponda@viniciosbarbosa.com>',
       to: email,
       subject: '[Pizza Shop] Link para login',
-      react: AuthenticationMagicLinkTemplate({
-        userEmail: email,
-        authLink: authLink.toString(),
-      }),
+      html: renderToString(
+        AuthenticationMagicLinkTemplate({
+          userEmail: email,
+          authLink: authLink.toString(),
+        }),
+      ),
     })
   },
   {
